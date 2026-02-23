@@ -3,13 +3,22 @@ import React from 'react'
 import {Button} from "@/components/ui/button";
 import {Plus} from "lucide-react";
 import Image from 'next/image';
-import {UseRouter} from 'next/navigation';
-import {UseState} from 'react';
+import {useRouter} from 'next/navigation';
+import {useState} from 'react';
 import { cn } from "@/lib/utils";
+import TemplateSelectionModel from './template-selection-model';
 
 const AddNewButton = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<{
+    title: string;
+    template : "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
+    description?: string;
+  } | null>(null);
   return (
+    <>
     <div
+      onClick ={() => setIsModalOpen(true)}
         className={cn(
           "group px-6 py-6 flex flex-row justify-between items-center border rounded-lg bg-muted cursor-pointer",
           "transition-all duration-300 ease-in-out",
@@ -32,6 +41,12 @@ const AddNewButton = () => {
           </div>
       </div>
     </div>
+    <TemplateSelectionModel
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+      onSubmit={()=>{}}
+      />
+    </>
   )
 }
 
