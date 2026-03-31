@@ -39,6 +39,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dropdown } from "react-day-picker";
 import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useWebContainer } from "@/features/webContainers/hooks/useWebContainer";
+import WebContainerPreview from "@/features/webContainers/components/webcontainer_preview";
 
 const Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -64,6 +66,15 @@ const Page = () => {
     setPlaygroundId,
     setOpenFiles,
   } = useFileExplorer();
+
+  const {
+    serverUrl,
+    isLoading:containerLoading,
+    error: containerError,
+    instance,
+    writeFileSync,
+    // @ts-ignore
+  } = useWebContainer({templateData});
 
   useEffect(()=>{
     setPlaygroundId(id);
@@ -209,6 +220,18 @@ const Page = () => {
                         onContentChange={(value)=> activeFileId && updateFileContent(activeFileId, value)}
                       />
                     </ResizablePanel>
+
+                      {
+                        isPreviewVisible && (
+                          <>
+                            <ResizableHandle />
+                            <ResizablePanel defaultSize={50} >
+                              <WebContainerPreview/>
+                            </ResizablePanel>
+                          </>
+                        )
+                      }
+
                   </ResizablePanelGroup>
                 </div>
               </div>
