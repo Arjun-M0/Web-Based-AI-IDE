@@ -5,6 +5,7 @@ import PlaygroundEditor from "@/features/playground/components/playground-editor
 import { useParams } from "next/navigation";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import LoadingStep from "@/components/ui/loader";
 import {
   TooltipProvider,
   Tooltip,
@@ -84,7 +85,7 @@ const Page = () => {
     if(templateData && !openFiles.length){
       setTemplateData(templateData);
     }
-  },[templateData, setTemplateData, openFile.length])
+  },[templateData, setTemplateData, openFiles.length])
 
   const activeFile = openFiles.find((file) => file.id === activeFileId);
   const hasUnsavedChanges = openFiles.some((file) => file.hasUnsavedChanges);
@@ -92,10 +93,61 @@ const Page = () => {
     openFile(file);
   }
 
-  if (isLoading) return <div>Loading...</div>;
-  if (!templateData) return <div>No template data found.</div>;
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
+        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Something went wrong
+        </h2>
+        <p className="text-gray-600 mb-4">{error}</p>
+        <Button onClick={() => window.location.reload()} variant="destructive">
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
-  console.log(templateData);
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
+        <div className="w-full max-w-md p-6 rounded-lg shadow-sm border">
+          <h2 className="text-xl font-semibold mb-6 text-center">
+            Loading Playground
+          </h2>
+          <div className="mb-8">
+            <LoadingStep
+              currentStep={1}
+              step={1}
+              label="Loading playground data"
+            />
+            <LoadingStep
+              currentStep={2}
+              step={2}
+              label="Setting up environment"
+            />
+            <LoadingStep currentStep={3} step={3} label="Ready to code" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No template data
+  if (!templateData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
+        <FolderOpen className="h-12 w-12 text-amber-500 mb-4" />
+        <h2 className="text-xl font-semibold text-amber-600 mb-2">
+          No template data available
+        </h2>
+        <Button onClick={() => window.location.reload()} variant="outline">
+          Reload Template
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -226,7 +278,15 @@ const Page = () => {
                           <>
                             <ResizableHandle />
                             <ResizablePanel defaultSize={50} >
-                              <WebContainerPreview/>
+                              <WebContainerPreview
+                                templateData={templateData}
+                                instance={instance}
+                                isLoading={containerLoading}
+                                error={containerError}
+                                writeFileSync={writeFileSync}
+                                serverUrl={serverUrl!}
+                                forceResetup={false}
+                              />
                             </ResizablePanel>
                           </>
                         )

@@ -1,7 +1,6 @@
 import { useState , useEffect , useCallback } from "react";
 import {WebContainer} from "@webcontainer/api";
 import {TemplateFolder} from "@/features/playground/lib/path-to-json";
-import { set } from "date-fns";
 
 interface UseWebContainerProps{
     templateData: TemplateFolder;
@@ -24,10 +23,12 @@ export const useWebContainer = ({templateData}: UseWebContainerProps): UseWebCon
 
     useEffect(()=>{
         let mounted = true;
+        let bootedInstance: WebContainer | null = null;
         async function initializeWebContainer(){
             try{
                 const webContainerInstance = await WebContainer.boot();
                 if(!mounted) return;
+                bootedInstance = webContainerInstance;
                 setInstance(webContainerInstance);
                 setIsLoading(false);
             }
@@ -41,8 +42,8 @@ export const useWebContainer = ({templateData}: UseWebContainerProps): UseWebCon
 
         return ()=>{
             mounted = false;
-            if(instance){
-                instance.teardown();
+            if(bootedInstance){
+                bootedInstance.teardown();
             }
         }
     },[]);
