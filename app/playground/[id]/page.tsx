@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , useCallback, useRef } from "react";
 import PlaygroundEditor from "@/features/playground/components/playground-editor";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import LoadingStep from "@/components/ui/loader";
@@ -22,6 +23,7 @@ import { usePlayground } from "@/features/playground/hooks/usePlayground";
 import TemplateFileTree from "@/features/playground/components/template-file-tree";
 import { useFileExplorer } from "@/features/playground/hooks/useFileExplorer";
 import type { TemplateFile } from "@/features/playground/types";
+import { findFilePath } from "@/features/playground/lib";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -77,6 +79,8 @@ const Page = () => {
     // @ts-ignore
   } = useWebContainer({templateData});
 
+  const lastSyncedContent = useRef<Map<string, string>>(new Map());
+
   useEffect(()=>{
     setPlaygroundId(id);
   },[id,setPlaygroundId])
@@ -92,6 +96,116 @@ const Page = () => {
   const handleFileSelect = (file: TemplateFile) => { 
     openFile(file);
   }
+
+  const handleSave = useCallback(
+    async (fileId?: string) => {
+      const targetFileId = fileId || activeFileId;
+      if (!targetFileId) return;
+
+      const fileToSave = openFiles.find((f) => f.id === targetFileId);
+      if (!fileToSave) return;
+
+      const latestTemplateData = useFileExplorer.getState().templateData;
+      if (!latestTemplateData) return;
+
+      try {
+        const filePath = findFilePath(fileToSave, latestTemplateData);
+        if (!filePath) {
+          toast.error(
+            `Could not find path for file: ${fileToSave.filename}.${fileToSave.fileExtension}`
+          );
+          return;
+        }
+
+        // Update file content in template data (clone for immutability)
+        const updatedTemplateData = JSON.parse(
+          JSON.stringify(latestTemplateData)
+        ) as { folderName: string; items: Array<Record<string, unknown>> };
+        const updateFileContent = (
+          items: Array<Record<string, unknown>>
+        ): Array<Record<string, unknown>> =>
+          items.map((item): Record<string, unknown> => {
+            if ("folderName" in item) {
+              return {
+                ...item,
+                items: updateFileContent(
+                  (item.items as Array<Record<string, unknown>>) || []
+                ),
+              };
+            } else if (
+              item.filename === fileToSave.filename &&
+              item.fileExtension === fileToSave.fileExtension
+            ) {
+              return { ...item, content: fileToSave.content };
+            }
+            return item;
+          });
+        updatedTemplateData.items = updateFileContent(
+          updatedTemplateData.items
+        );
+
+        // Sync with WebContainer
+        if (writeFileSync) {
+          await writeFileSync(filePath, fileToSave.content);
+          lastSyncedContent.current.set(fileToSave.id, fileToSave.content);
+          if (instance && instance.fs) {
+            await instance.fs.writeFile(filePath, fileToSave.content);
+          }
+        }
+
+        // Use saveTemplateData to persist changes
+        await saveTemplateData(updatedTemplateData as any);
+        setTemplateData(updatedTemplateData as any);
+
+        // Update open files
+        const updatedOpenFiles = openFiles.map((f) =>
+          f.id === targetFileId
+            ? {
+                ...f,
+                content: fileToSave.content,
+                originalContent: fileToSave.content,
+                hasUnsavedChanges: false,
+              }
+            : f
+        );
+        setOpenFiles(updatedOpenFiles);
+
+        toast.success(
+          `Saved ${fileToSave.filename}.${fileToSave.fileExtension}`
+        );
+      } catch (error) {
+        console.error("Error saving file:", error);
+        toast.error(
+          `Failed to save ${fileToSave.filename}.${fileToSave.fileExtension}`
+        );
+        throw error;
+      }
+    },
+    [
+      activeFileId,
+      openFiles,
+      writeFileSync,
+      instance,
+      saveTemplateData,
+      setTemplateData,
+      setOpenFiles,
+    ]
+  );
+
+  React.useEffect(()=>{
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleSave]);
 
   if (error) {
     return (
@@ -175,7 +289,7 @@ const Page = () => {
                       size={"sm"}
                       variant="outline"
                       disabled={!activeFile || !activeFile.hasUnsavedChanges}
-                      onClick={() => {}}
+                      onClick={() => handleSave()}
                     >
                       <Save className="size-4" />
                     </Button>
