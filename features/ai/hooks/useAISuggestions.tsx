@@ -55,8 +55,8 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
         return currentState;
       }
 
-      // Set loading state immediately
-      const newState = { ...currentState, isLoading: true };
+      // Set loading state immediately and clear stale suggestion
+      const newState = { ...currentState, isLoading: true, suggestion: null, position: null };
 
       // Perform the async operation
       (async () => {

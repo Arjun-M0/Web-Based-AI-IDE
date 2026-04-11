@@ -1,12 +1,12 @@
 import build from "next/dist/build";
 import { type NextRequest, NextResponse } from "next/server"
 
-interface CodeSuggestionRequest{
-    fileContent: string;
-    cursorLine: number;
-    cursorColumn: number;
-    suggestionType: string;
-    fileName?: string;
+interface CodeSuggestionRequest {
+  fileContent: string;
+  cursorLine: number;
+  cursorColumn: number;
+  suggestionType: string;
+  fileName?: string;
 }
 
 interface CodeContext {
@@ -24,13 +24,13 @@ interface CodeContext {
 
 
 export async function POST(request: NextRequest) {
-try{
+  try {
     const body: CodeSuggestionRequest = await request.json();
 
     const { fileContent, cursorLine, cursorColumn, suggestionType, fileName } = body;
 
-    if(!fileContent || cursorLine < 0 || cursorColumn < 0 || !suggestionType){
-        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!fileContent || cursorLine < 0 || cursorColumn < 0 || !suggestionType) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const context = analyzeCodeContext(fileContent, cursorLine, cursorColumn, fileName);
@@ -39,20 +39,21 @@ try{
 
     const suggestion = await generateSuggestion(prompt);
 
-    return NextResponse.json({ suggestion ,
-        context ,
-        metadata : {
-            language: context.language,
-            framework: context.framework,
-            position: context.cursorPosition,
-            generatedAt: new Date().toISOString(),
-        }
+    return NextResponse.json({
+      suggestion,
+      context,
+      metadata: {
+        language: context.language,
+        framework: context.framework,
+        position: context.cursorPosition,
+        generatedAt: new Date().toISOString(),
+      }
     });
-}
-catch(error){
+  }
+  catch (error) {
     console.error("Error in code suggestion API:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-}
+  }
 }
 
 function analyzeCodeContext(content: string, line: number, column: number, fileName?: string): CodeContext {
@@ -92,29 +93,14 @@ function analyzeCodeContext(content: string, line: number, column: number, fileN
 }
 
 function buildPrompt(context: CodeContext, suggestionType: string): string {
-  return `You are an expert code completion assistant. Generate a ${suggestionType} suggestion.
+  // Use Qwen's native Fill-in-the-Middle (FIM) tokens for pure code completion
+  const prefix = context.beforeContext ? context.beforeContext + "\n" : "";
+  const suffix = context.afterContext ? "\n" + context.afterContext : "";
 
-Language: ${context.language}
-Framework: ${context.framework}
+  const fullPrefix = prefix + context.currentLine.substring(0, context.cursorPosition.column);
+  const fullSuffix = context.currentLine.substring(context.cursorPosition.column) + suffix;
 
-Context:
-${context.beforeContext}
-${context.currentLine.substring(0, context.cursorPosition.column)}|CURSOR|${context.currentLine.substring(context.cursorPosition.column)}
-${context.afterContext}
-
-Analysis:
-- In Function: ${context.isInFunction}
-- In Class: ${context.isInClass}
-- After Comment: ${context.isAfterComment}
-- Incomplete Patterns: ${context.incompletePatterns.join(", ") || "None"}
-
-Instructions:
-1. Provide only the code that should be inserted at the cursor
-2. Maintain proper indentation and style
-3. Follow ${context.language} best practices
-4. Make the suggestion contextually appropriate
-
-Generate suggestion:`
+  return `<|fim_prefix|>${fullPrefix}<|fim_suffix|>${fullSuffix}<|fim_middle|>`;
 }
 
 async function generateSuggestion(prompt: string): Promise<string> {
@@ -123,12 +109,14 @@ async function generateSuggestion(prompt: string): Promise<string> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "codellama:latest",
+        model: "qwen2.5-coder:1.5b",
         prompt,
         stream: false,
+        raw: true,
         options: {
-          temperature: 0.7,
-          max_tokens: 300,
+          temperature: 0.1,
+          num_predict: 30,
+          stop: ["\n\n", "```", "<|file_separator|>", "<|fim_pad|>"],
         },
       }),
     })
