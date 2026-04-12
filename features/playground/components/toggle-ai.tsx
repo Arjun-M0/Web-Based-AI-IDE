@@ -146,23 +146,6 @@ const ToggleAI = ({
               </div>
           </div>
         </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-
-          <DropdownMenuItem 
-            onClick={() => {}}
-            className="py-2.5 cursor-pointer"
-          >
-            <div className="flex items-center gap-3 w-full">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="text-sm font-medium">Open Chat</div>
-                <div className="text-xs text-muted-foreground">
-                  Chat with AI assistant
-                </div>
-              </div>
-            </div>
-          </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

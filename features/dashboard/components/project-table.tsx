@@ -42,6 +42,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   MoreHorizontal,
@@ -70,6 +71,7 @@ interface EditProjectData {
 }
 
 export default function ProjectTable({projects,onDeleteProject,onUpdateProject,onDuplicateProject}:ProjectTableProps) {
+  const router = useRouter();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -245,10 +247,11 @@ export default function ProjectTable({projects,onDeleteProject,onUpdateProject,o
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={isLoading}>Cancel</Button>
-                    <Button onClick={() => {
+                    <Button onClick={async() => {
                         if(onUpdateProject && selectedProject) {
                             setIsLoading(true);
-                            onUpdateProject(selectedProject.id, editData);
+                        await onUpdateProject(selectedProject.id, editData);
+                        router.refresh();
                         }
                         setEditDialogOpen(false);
                         setSelectedProject(null);
