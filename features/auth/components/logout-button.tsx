@@ -1,4 +1,3 @@
-import react from "react";
 import { signOut } from "next-auth/react";
 import {LogoutButtonProps} from "../types";
 import {useRouter} from "next/navigation";

@@ -2,12 +2,11 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import {db} from "./lib/db";
 import authConfig from "./auth.config";
-import { refresh } from "next/cache";
-import { getAccounntByUserId, getUserById } from "./features/auth/actions";
+import { getUserById } from "./features/auth/actions";
 
 export const { auth , handlers , signIn , signOut } = NextAuth({
     callbacks: {
-        async signIn({user,account,profile}){
+        async signIn({user,account}){
             if (!user || !account) return false;
 
             const existingUser = await db.user.findUnique({
@@ -81,14 +80,13 @@ export const { auth , handlers , signIn , signOut } = NextAuth({
             return true;
         } ,
 
-        async jwt({ token, user, account }) {
+        async jwt({ token }) {
             if (!token.sub) return token;
 
             const existingUser = await getUserById(token.sub);
 
             if(!existingUser) return token;
 
-            const existingAccount = await getAccounntByUserId(existingUser.id);
             token.name = existingUser.name;
             token.email = existingUser.email;
             token.role = existingUser.role;

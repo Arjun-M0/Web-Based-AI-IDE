@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import type { Project } from "../types";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -80,7 +79,6 @@ export default function ProjectTable({projects,onDeleteProject,onUpdateProject,o
     description: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [favoutrie, setFavourite] = useState(false);
 
     const handleDuplicateProject = async(project:Project) => {
         if(!onDuplicateProject) return;

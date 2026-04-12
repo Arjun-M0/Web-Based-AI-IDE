@@ -4,7 +4,6 @@ import path from "path";
 import fs from "fs/promises";
 import { NextRequest } from "next/server";
 import { templatePaths } from "@/lib/template";
-import { te } from "date-fns/locale";
 
 function validateJsonStructure(data:unknown):boolean{
     try{

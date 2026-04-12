@@ -13,7 +13,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import {
-  ChevronRight,
   Search,
   Star,
   Code,
@@ -26,7 +25,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { set } from "date-fns";
 
 type TemplateSelectionModelProps = {
   isOpen: boolean;

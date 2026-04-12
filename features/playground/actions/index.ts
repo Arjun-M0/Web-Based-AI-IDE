@@ -3,7 +3,6 @@
 import { currentUser } from "@/features/auth/actions";
 import {db} from "@/lib/db";
 import { TemplateFolder } from "../lib/path-to-json";
-import { revalidatePath } from "next/cache";
 
 export const getPlaygroundById = async (id:string) => {
     try{
@@ -30,7 +29,7 @@ export const saveUpdatedCode = async (playgroundId:string , data:TemplateFolder)
     const user = await currentUser();
     if(!user) return null;
     try{
-        const updatedPlayground = await db.templateFile.upsert({
+        await db.templateFile.upsert({
             where: {
                 playgroundId
             },

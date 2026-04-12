@@ -11,11 +11,6 @@ import { toast } from 'sonner';
 
 const AddNewButton = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<{
-    title: string;
-    template : "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
-    description?: string;
-  } | null>(null);
 
   const router = useRouter();
 
@@ -24,7 +19,6 @@ const AddNewButton = () => {
     template : "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
     description?: string;
   })=>{
-    setSelectedTemplate(data);
     const res = await createPlayground(data);
     toast.success("Playground created successfully!");
      setIsModalOpen(false);

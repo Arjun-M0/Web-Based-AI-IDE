@@ -2,7 +2,6 @@
 import {currentUser} from "@/features/auth/actions";
 import {db} from "@/lib/db";
 import {Templates} from "@/lib/generated/prisma/enums";
-import { pl } from "date-fns/locale";
 import { revalidatePath } from "next/cache";
 
 export const createPlayground = async (data:{

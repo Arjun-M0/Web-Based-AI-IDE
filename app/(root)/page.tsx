@@ -1,17 +1,5 @@
-import {Button} from "@/components/ui/button";
-import {ArrowUpRight} from "lucide-react";
-import Link from "next/link";
-
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="z-20 flex flex-col items-center justify-start min-h-screen py-2 mt-10">
-      <Link href={"/dashboard"}>
-        <Button variant={"default"} className="mb-4" size={"lg"}>
-          Get Started
-          <ArrowUpRight className="w-3.5 h-3.5" />
-        </Button>
-      </Link>
-    </div>
-  );
+  redirect("/dashboard");
 }

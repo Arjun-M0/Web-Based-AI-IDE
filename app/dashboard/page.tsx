@@ -3,11 +3,15 @@ import AddNewButton from "@/features/dashboard/components/add-new-button";
 import EmptyState from "@/components/ui/empty-state";
 import { deleteProjectById, duplicateProjectById, editProjectById, getAllPlaygroundsForUser } from "@/features/dashboard/actions";
 import ProjectTable from "@/features/dashboard/components/project-table";
+import UserButton from "@/features/auth/components/user-button";
 
 const Page = async()=>{
     const playgrounds = await getAllPlaygroundsForUser();
     return(
         <div className="flex flex-col justify-start items-center min-h-screen mx-auto max-w-7xl px-4 py-10">
+            <div className="w-full flex justify-end">
+                <UserButton />
+            </div>
             <div className="mt-10 flex flex-col justify-center items-center w-full">
                 <AddNewButton/>
             </div>

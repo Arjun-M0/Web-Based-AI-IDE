@@ -1,7 +1,6 @@
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { getAllPlaygroundsForUser } from '@/features/dashboard/actions';
 import DashboardSidebar from '@/features/dashboard/components/dashboard-sidebar';
-import { get } from 'http';
 import React from 'react';
 
 export default async function DashboardLayout({children}: {children: React.ReactNode}) {

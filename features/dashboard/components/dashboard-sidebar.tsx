@@ -3,9 +3,8 @@ import React, { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarHeader, SidebarMenu, SidebarMenuItem ,SidebarMenuButton, SidebarGroupLabel, SidebarGroupAction, SidebarGroupContent, SidebarFooter, SidebarRail  } from '@/components/ui/sidebar';
-import { Code2, Compass, Database, FlameIcon, Home, Layout, Lightbulb, LucideIcon, Terminal, Zap } from 'lucide-react';
+import { Code2, Compass, Database, FlameIcon, Layout, Lightbulb, LucideIcon, Terminal, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
 import { FolderPlus } from 'lucide-react';
 import { History } from 'lucide-react';
 import TemplateSelectionModel from './template-selection-model';
@@ -32,7 +31,7 @@ const DashboardSidebar = ({initialPlaygroundData}: {initialPlaygroundData: Playg
     const pathname = usePathname();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [recentPlaygrounds, setRecentPlaygrounds] = useState(initialPlaygroundData.slice(0,5)); 
+  const [recentPlaygrounds] = useState(initialPlaygroundData.slice(0,5)); 
 
     const handleCreatePlayground = async (data: {
       title: string;
@@ -49,7 +48,7 @@ const DashboardSidebar = ({initialPlaygroundData}: {initialPlaygroundData: Playg
         toast.success("Playground created successfully!");
         setIsModalOpen(false);
         router.push(`/playground/${res.id}`);
-      } catch (error) {
+      } catch {
         toast.error("Unable to create playground. Please try again.");
       }
     };
@@ -63,16 +62,6 @@ const DashboardSidebar = ({initialPlaygroundData}: {initialPlaygroundData: Playg
         </SidebarHeader>
         <SidebarContent>
             <SidebarGroup>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={pathname === "/"} tooltip={"Home"}>
-                            <Link href={"/"}>
-                            <Home className='size-4'/>
-                            <span>Home</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild isActive={pathname === "/dashboard"} tooltip={"Dashboard"}>
